@@ -208,7 +208,7 @@ class BiliBili:
         auto_os['cost'] = min_cost
         return auto_os
 
-    def upload_file(self, filepath: str, lines='AUTO', tasks=3):
+    async def upload_file(self, filepath: str, lines='AUTO', tasks=3):
         if not self._auto_os:
             self._auto_os = self.probe()
             if lines == 'kodo':
@@ -267,7 +267,7 @@ class BiliBili:
                 raise Exception(res)
             else:
                 print(res)
-            return asyncio.run(upload(f, total_size, res.json(), tasks=tasks))
+            return await upload(f, total_size, res.json(), tasks=tasks)
 
     async def kodo(self, file, total_size, ret, chunk_size=4194304, tasks=3):
         filename = file.name
