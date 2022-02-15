@@ -7,9 +7,9 @@ import redis
 from upload import upload_video
 
 class YtbToolMan:
-    redis = redis.StrictRedis(host='106.52.137.139',port=16379,password='ZXCzxc132')
+    redis = redis.StrictRedis(host='xxx',port=6379,password='')
     def __init__(self):
-        self.redis = redis.StrictRedis(host='106.52.137.139',port=16379,password='ZXCzxc132')
+        self.redis = redis.StrictRedis(host='xxx',port=6379,password='')
 
     @classmethod
     async def create(self):
