@@ -7,9 +7,8 @@ import redis
 from upload import upload_video
 
 class YtbToolMan:
-    redis = redis.StrictRedis(host='xxx',port=6379,password='')
-    def __init__(self):
-        self.redis = redis.StrictRedis(host='xxx',port=6379,password='')
+        def __init__(self):
+        self.url_list = {}
 
     @classmethod
     async def create(self):
@@ -61,7 +60,8 @@ class YtbToolMan:
             video_url = page.locator(f"#items > ytd-grid-video-renderer")
             for i in range(int(video_total_count[:2])):
                 url = await video_url.nth(i).locator('div>div>div>h3>a').get_attribute('href')
-                if self.redis.sadd('url_list',f'https://www.youtube.com{url}') == 1:
+                if f'https://www.youtube.com{url}' not in self.url_list:
+                    self.url_list.add(f'https://www.youtube.com{url}')
                     print(f'新的视频链接https://www.youtube.com{url}')
                     await upload_video(f'https://www.youtube.com{url}')
                 else:
