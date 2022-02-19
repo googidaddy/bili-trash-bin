@@ -69,7 +69,7 @@ class BiliBili:
     BUILD_NO = int(BUILD_VER[0] * 1e6 + BUILD_VER[1] * 1e4 + BUILD_VER[2] * 1e2)
     BUILD_STR = '.'.join(map(lambda v: str(v), BUILD_VER))
     def __init__(self, video: 'Data', sessdata: str = '', csrf: str = '', buvid3 : str= '') -> None:
-        # self.app_key = 'bca7e84c2d947ac6'
+        # 1
         self.app_key = 'ae57252b0c09105d'
         self.__session = requests.Session()
         self.video = video
@@ -87,104 +87,6 @@ class BiliBili:
         self._auto_os = None
         self.persistence_path = 'engine/bili.cookie'
 
-    def login(self, persistence_path, user):
-        self.persistence_path = persistence_path
-        if os.path.isfile(persistence_path):
-            print('使用持久化内容上传')
-            self.load()
-        if not self.cookies and user.get('cookies'):
-            self.cookies = user['cookies']
-        if self.cookies:
-            try:
-                self.login_by_cookies(self.cookies)
-            except:
-                logger.exception('login error')
-                self.login_by_password(**user['account'])
-        else:
-            self.login_by_password(**user['account'])
-        self.store()
-
-    def load(self):
-        try:
-            with open(self.persistence_path) as f:
-                self.cookies = json.load(f)
-                self.access_token = self.cookies['access_token']
-        except (JSONDecodeError, KeyError):
-            logger.exception('加载cookie出错')
-
-    def store(self):
-        with open(self.persistence_path, "w") as f:
-            json.dump({**self.cookies,
-                       'access_token': self.access_token,
-                       'refresh_token': self.refresh_token
-                       }, f)
-
-    def login_by_password(self, username, password):
-        print('使用账号上传')
-        key_hash, pub_key = self.get_key()
-        encrypt_password = base64.b64encode(rsa.encrypt(f'{key_hash}{password}'.encode(), pub_key))
-        payload = {
-            "actionKey": 'appkey',
-            "appkey": self.app_key,
-            "build": 6040500,
-            "captcha": '',
-            "challenge": '',
-            "channel": 'bili',
-            "device": 'phone',
-            "mobi_app": 'android',
-            "password": encrypt_password,
-            "permission": 'ALL',
-            "platform": 'android',
-            "seccode": "",
-            "subid": 1,
-            "ts": int(time.time()),
-            "username": username,
-            "validate": "",
-        }
-        response = self.__session.post("https://passport.bilibili.com/api/v3/oauth2/login", timeout=5,
-                                       data={**payload, 'sign': self.sign(parse.urlencode(payload))})
-        r = response.json()
-        if r['code'] != 0 or r.get('data') is None or r['data'].get('cookie_info') is None:
-            raise RuntimeError(r)
-        try:
-            for cookie in r['data']['cookie_info']['cookies']:
-                self.__session.cookies.set(cookie['name'], cookie['value'])
-                if 'bili_jct' == cookie['name']:
-                    self.csrf = cookie['value']
-            self.cookies = self.__session.cookies.get_dict()
-            self.access_token = r['data']['token_info']['access_token']
-            self.refresh_token = r['data']['token_info']['refresh_token']
-        except:
-            raise RuntimeError(r)
-        return r
-
-    def login_by_cookies(self, cookie):
-        print('使用cookies上传')
-        requests.utils.add_dict_to_cookiejar(self.__session.cookies, cookie)
-        if 'bili_jct' in cookie:
-            self.csrf = cookie["bili_jct"]
-        data = self.__session.get("https://api.bilibili.com/x/web-interface/nav").json()
-        if data["code"] != 0:
-            raise Exception(data)
-
-    @staticmethod
-    def sign(param):
-        # salt = '60698ba2f68e01ce44738920a0ffe768'
-        salt = 'c75875c596a69eb55bd119e74b07cfe3'
-        return hashlib.md5(f"{param}{salt}".encode()).hexdigest()
-
-    def get_key(self):
-        url = "https://passport.bilibili.com/x/passport-login/web/key"
-        payload = {
-            'appkey': f'{self.app_key}',
-            'sign': self.sign(f"appkey={self.app_key}"),
-        }
-        response = self.__session.post(url, data=payload, timeout=5)
-        r = response.json()
-        if r and r["code"] == 0:
-            return r['data']['hash'], rsa.PublicKey.load_pkcs1_openssl_pem(r['data']['key'].encode())
-
-    # choose lines!
     def probe(self):
         ret = self.__session.get('https://member.bilibili.com/preupload?r=probe', timeout=5).json()
         logger.info(f"线路:{ret['lines']}")
@@ -199,6 +101,7 @@ class BiliBili:
             start = time.perf_counter()
             test = self.__session.request(method, f"https:{line['probe_url']}", data=data, timeout=30)
             cost = time.perf_counter() - start
+            # 这里不会打印
             print(line['query'], cost)
             if test.status_code != 200:
                 return
@@ -207,7 +110,7 @@ class BiliBili:
                 min_cost = cost
         auto_os['cost'] = min_cost
         return auto_os
-
+    # 3
     async def upload_file(self, filepath: str, lines='AUTO', tasks=3):
         if not self._auto_os:
             self._auto_os = self.probe()
@@ -318,10 +221,10 @@ class BiliBili:
         headers = {
             "X-Upos-Auth": auth
         }
-        # 向上传地址申请上传，得到上传id等信息
+        
         upload_id = self.__session.post(f'{url}?uploads&output=json', timeout=30,
                                         headers=headers).json()["upload_id"]
-        # 开始上传
+       
         parts = []  # 分块信息
         chunks = math.ceil(total_size / chunk_size)  # 获取分块数量
 
@@ -352,7 +255,7 @@ class BiliBili:
         if r.get('OK') != 1:
             raise Exception(r)
         return {"title": splitext(filename)[0], "filename": splitext(basename(upos_uri))[0], "desc": ""}
-
+    # chunk之后上传
     @staticmethod
     async def _upload(params, file, chunk_size, afunc, tasks=3):
         params['chunk'] = -1
@@ -415,21 +318,6 @@ class BiliBili:
         logger.info('使用网页端api提交')
         return self.__session.post(f'https://member.bilibili.com/x/vu/web/add?csrf={self.csrf}', timeout=5,
                                    json=asdict(self.video)).json()
-
-    def submit_client(self):
-        logger.info('使用客户端api端提交')
-        if not self.access_token:
-            self.login_by_password(**config['user']['account'])
-            self.store()
-        while True:
-            ret = self.__session.post(f'http://member.bilibili.com/x/vu/client/add?access_key={self.access_token}',
-                                      timeout=5, json=asdict(self.video)).json()
-            if ret['code'] == -101:
-                logger.info(f'刷新token{ret}')
-                self.login_by_password(**config['user']['account'])
-                self.store()
-                continue
-            return ret
 
     def cover_up(self, img: str):
         """
@@ -495,6 +383,7 @@ class BiliBili:
 @dataclass
 class Data:
     """
+    # 1.初始化
     cover: 封面图片，可由recovers方法得到视频的帧截图
     """
     copyright: int = 2

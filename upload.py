@@ -13,9 +13,9 @@ async def upload_video(url):
     video = Data()
     video_info = download_clip(url)
     video.title = video_info.get("title")
-    video.desc = "你怎么不点个赞？转载工具学习仓库地址:https://github.com/googidaddy/bili_upload_tool"
+    video.desc = "你怎么不点个赞？转载工具学习仓库地址:https://github.com/googidaddy/bili-trash-bin"
     video.source = "www.youtube.com"
-    video.tid = int("21")
+    video.tid = int(os.getenv('ID')) | int("21")
     video.set_tag("vlog")
     video_path = video_info.get("video_path")
     cover_path = video_info.get("cover_path")
@@ -29,5 +29,7 @@ async def upload_video(url):
         ret = bili.submit_web()
         if ret :
             os.remove(video_info.get("name"))
+            os.remove(video_info.get('video_path'))
             os.remove(cover_path)
+            time.sleep(45)
         return ret
