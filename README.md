@@ -12,8 +12,8 @@ This tool makes bilibili better!!
 or
 using poetry.
 
-1. fill your infos to the .env file.
-2. fill your channel to the youtube_up.json.`format: author:link`
+1. fill your infos to the [.env](https://github.com/googidaddy/bili-trash-bin/blob/2795397081aee7ccd925deacc339b2aae67480a8/.env) file.
+2. fill your channel to the [youtube_up.json](https://github.com/googidaddy/bili-trash-bin/blob/2795397081aee7ccd925deacc339b2aae67480a8/youtube_up.json).`format: author:link`
    like this `"asmitawita" : "https://www.youtube.com/c/asmitawita/videos"`
 3. **Start video.py**
 

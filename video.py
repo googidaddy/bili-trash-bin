@@ -7,7 +7,7 @@ import redis
 from upload import upload_video
 
 class YtbToolMan:
-        def __init__(self):
+    def __init__(self):
         self.url_list = {}
 
     @classmethod
