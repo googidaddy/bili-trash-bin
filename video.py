@@ -7,8 +7,8 @@ import redis
 from upload import upload_video
 
 class YtbToolMan:
-    def __init__(self):
-        self.url_list = {}
+
+    url_list = {1,2,3}
 
     @classmethod
     async def create(self):
