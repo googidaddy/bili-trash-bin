@@ -15,7 +15,7 @@ async def upload_video(url):
     video.title = video_info.get("title")
     video.desc = "你怎么不点个赞？转载工具学习仓库地址:https://github.com/googidaddy/bili-trash-bin"
     video.source = "www.youtube.com"
-    video.tid = int(os.getenv('ID')) | int("21")
+    video.tid = int("21")
     video.set_tag("vlog")
     video_path = video_info.get("video_path")
     cover_path = video_info.get("cover_path")
